@@ -5,6 +5,8 @@ import time
 import datetime
 import platform
 import winsound  # 用于Windows系统的声音提醒
+import json  # 用于数据持久化存储
+import os  # 用于文件路径操作
 
 # 尝试导入ctypes用于调用系统API
 use_ctype = False
@@ -25,6 +27,8 @@ class DigitalClock(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("数码管时钟")
+        # 计时数据存储文件路径
+        self.timer_data_file = os.path.join(os.path.expanduser("~"), ".digital_clock_timer.json")
         # 窗口设置为无边框
         self.overrideredirect(True)
         # 设置窗口始终在最前面
@@ -80,6 +84,8 @@ class DigitalClock(tk.Tk):
         )
         self.time_label.pack(fill=tk.BOTH, expand=True)
         
+        # 加载计时数据
+        self.load_saved_timer_data()
         # 更新时间
         self.update_time()
     
@@ -186,6 +192,8 @@ class DigitalClock(tk.Tk):
             # 累计已计时时间
             self.timer_accumulated += time.time() - self.timer_start_time
             self.timer_start_time = None
+            # 保存计时数据
+            self.save_timer_data()
     
     def reset_timer(self):
         # 重置计时
@@ -196,6 +204,44 @@ class DigitalClock(tk.Tk):
         # 如果当前是计时模式，显示0
         if self.mode == "timer":
             self.time_label.config(text="00:00:00")
+    
+    def save_timer_data(self):
+        """保存计时数据到文件"""
+        try:
+            data = {
+                "timer_accumulated": self.timer_accumulated,
+                "mode": self.mode
+            }
+            with open(self.timer_data_file, 'w') as f:
+                json.dump(data, f)
+        except Exception as e:
+            print(f"保存计时数据失败: {e}")
+    
+    def load_timer_data(self):
+        """从文件加载计时数据"""
+        try:
+            if os.path.exists(self.timer_data_file):
+                with open(self.timer_data_file, 'r') as f:
+                    data = json.load(f)
+                    return data
+        except Exception as e:
+            print(f"加载计时数据失败: {e}")
+        return None
+    
+    def load_saved_timer_data(self):
+        """在初始化时加载并应用保存的计时数据"""
+        data = self.load_timer_data()
+        if data:
+            self.timer_accumulated = data.get("timer_accumulated", 0)
+            saved_mode = data.get("mode", "clock")
+            # 如果保存的模式是计时模式，自动切换到计时模式并显示保存的时间
+            if saved_mode == "timer" and self.timer_accumulated > 0:
+                self.mode = "timer"
+                # 显示保存的计时时间
+                hours, remainder = divmod(int(self.timer_accumulated), 3600)
+                minutes, seconds = divmod(remainder, 60)
+                timer_display = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+                self.time_label.config(text=timer_display)
     
     def switch_to_clock(self):
         # 切换回时钟模式
@@ -272,6 +318,12 @@ class DigitalClock(tk.Tk):
         # R键：重置当前模式的计时
         if self.mode == "timer":
             self.reset_timer()
+            # 清除保存的计时数据文件
+            try:
+                if os.path.exists(self.timer_data_file):
+                    os.remove(self.timer_data_file)
+            except Exception as e:
+                print(f"清除计时数据失败: {e}")
         elif self.mode == "countdown":
             self.reset_countdown()
     
@@ -284,7 +336,12 @@ class DigitalClock(tk.Tk):
         if self.mode != "timer":
             self.mode = "timer"
             self.timer_running = False
-            self.reset_timer()
+            self.timer_start_time = None  # 停止计时但保留累计时间
+            # 立即显示当前累计时间
+            hours, remainder = divmod(int(self.timer_accumulated), 3600)
+            minutes, seconds = divmod(remainder, 60)
+            timer_display = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+            self.time_label.config(text=timer_display)
     
     def show_countdown_dialog(self):
         # 显示倒计时设置对话框
@@ -379,6 +436,10 @@ if __name__ == "__main__":
             def __init__(self):
                 super().__init__()
                 self.title("数码管时钟")
+                # 计时数据存储文件路径
+                self.timer_data_file = os.path.join(os.path.expanduser("~"), ".digital_clock_timer.json")
+                # 加载计时数据
+                self.load_saved_timer_data()
                 self.overrideredirect(True)
                 self.attributes('-topmost', True)
                 self.attributes('-alpha', 0.95)
@@ -489,6 +550,8 @@ if __name__ == "__main__":
                     # 累计已计时时间
                     self.timer_accumulated += time.time() - self.timer_start_time
                     self.timer_start_time = None
+                    # 保存计时数据
+                    self.save_timer_data()
             
             def reset_timer(self):
                 # 重置计时
@@ -499,6 +562,44 @@ if __name__ == "__main__":
                 # 如果当前是计时模式，显示0
                 if self.mode == "timer":
                     self.time_label.config(text="00:00:00")
+            
+            def save_timer_data(self):
+                """保存计时数据到文件"""
+                try:
+                    data = {
+                        "timer_accumulated": self.timer_accumulated,
+                        "mode": self.mode
+                    }
+                    with open(self.timer_data_file, 'w') as f:
+                        json.dump(data, f)
+                except Exception as e:
+                    print(f"保存计时数据失败: {e}")
+            
+            def load_timer_data(self):
+                """从文件加载计时数据"""
+                try:
+                    if os.path.exists(self.timer_data_file):
+                        with open(self.timer_data_file, 'r') as f:
+                            data = json.load(f)
+                            return data
+                except Exception as e:
+                    print(f"加载计时数据失败: {e}")
+                return None
+            
+            def load_saved_timer_data(self):
+                """在初始化时加载并应用保存的计时数据"""
+                data = self.load_timer_data()
+                if data:
+                    self.timer_accumulated = data.get("timer_accumulated", 0)
+                    saved_mode = data.get("mode", "clock")
+                    # 如果保存的模式是计时模式，自动切换到计时模式并显示保存的时间
+                    if saved_mode == "timer" and self.timer_accumulated > 0:
+                        self.mode = "timer"
+                        # 显示保存的计时时间
+                        hours, remainder = divmod(int(self.timer_accumulated), 3600)
+                        minutes, seconds = divmod(remainder, 60)
+                        timer_display = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+                        self.time_label.config(text=timer_display)
             
             def switch_to_clock(self):
                 # 切换回时钟模式
@@ -573,6 +674,12 @@ if __name__ == "__main__":
                 # R键：重置当前模式的计时
                 if self.mode == "timer":
                     self.reset_timer()
+                    # 清除保存的计时数据文件
+                    try:
+                        if os.path.exists(self.timer_data_file):
+                            os.remove(self.timer_data_file)
+                    except Exception as e:
+                        print(f"清除计时数据失败: {e}")
                 elif self.mode == "countdown":
                     self.reset_countdown()
             
@@ -585,7 +692,12 @@ if __name__ == "__main__":
                 if self.mode != "timer":
                     self.mode = "timer"
                     self.timer_running = False
-                    self.reset_timer()
+                    self.timer_start_time = None  # 停止计时但保留累计时间
+                    # 立即显示当前累计时间
+                    hours, remainder = divmod(int(self.timer_accumulated), 3600)
+                    minutes, seconds = divmod(remainder, 60)
+                    timer_display = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+                    self.time_label.config(text=timer_display)
             
             def show_countdown_dialog(self):
                 # 显示倒计时设置对话框
