@@ -43,10 +43,15 @@ class DigitalClock(tk.Tk):
         
         # 快捷键绑定 - 使用bind_all确保无论焦点在哪里都能接收键盘事件
         self.bind_all("<space>", self.on_space_press)  # 空格：开始/暂停计时
-        self.bind_all("r", self.on_r_press)            # R键：重置计时
-        self.bind_all("c", self.on_c_press)            # C键：切换回时钟模式
-        self.bind_all("t", self.on_t_press)            # T键：切换到正向计时模式
-        self.bind_all("d", self.on_d_press)            # D键：切换到倒计时模式
+        # 同时绑定大小写字母
+        self.bind_all("r", self.on_r_press)            # r键：重置计时
+        self.bind_all("R", self.on_r_press)            # R键：重置计时
+        self.bind_all("c", self.on_c_press)            # c键：切换回时钟模式
+        self.bind_all("C", self.on_c_press)            # C键：切换回时钟模式
+        self.bind_all("t", self.on_t_press)            # t键：切换到正向计时模式
+        self.bind_all("T", self.on_t_press)            # T键：切换到正向计时模式
+        self.bind_all("d", self.on_d_press)            # d键：切换到倒计时模式
+        self.bind_all("D", self.on_d_press)            # D键：切换到倒计时模式
         
         # 计时功能相关变量
         self.mode = "clock"  # clock, timer, countdown
@@ -219,8 +224,8 @@ class DigitalClock(tk.Tk):
             if self.countdown_start is None or self.mode != "countdown":
                 self.mode = "countdown"
                 # 显示设置的倒计时时间
-                hours, remainder = divmod(self.countdown_time, 3600)
-                minutes, seconds = divmod(remainder, 60)
+                hours, remainder = divmod(int(self.countdown_time), 3600)
+                minutes, seconds = divmod(int(remainder), 60)
                 countdown_display = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
                 self.time_label.config(text=countdown_display)
             self.countdown_start = time.time()
@@ -228,9 +233,10 @@ class DigitalClock(tk.Tk):
             # 暂停倒计时
             self.timer_running = False
             # 计算已经过去的时间并更新剩余时间
-            elapsed = time.time() - self.countdown_start
-            self.countdown_time = max(0, self.countdown_time - elapsed)
-            self.countdown_start = None
+            if self.countdown_start is not None:
+                elapsed = time.time() - self.countdown_start
+                self.countdown_time = max(0, self.countdown_time - elapsed)
+                self.countdown_start = None
     
     def reset_countdown(self):
         # 重置倒计时
@@ -386,10 +392,15 @@ if __name__ == "__main__":
                 
                 # 快捷键绑定 - 使用bind_all确保无论焦点在哪里都能接收键盘事件
                 self.bind_all("<space>", self.on_space_press)  # 空格：开始/暂停计时
-                self.bind_all("r", self.on_r_press)            # R键：重置计时
-                self.bind_all("c", self.on_c_press)            # C键：切换回时钟模式
-                self.bind_all("t", self.on_t_press)            # T键：切换到正向计时模式
-                self.bind_all("d", self.on_d_press)            # D键：切换到倒计时模式
+                # 同时绑定大小写字母
+                self.bind_all("r", self.on_r_press)            # r键：重置计时
+                self.bind_all("R", self.on_r_press)            # R键：重置计时
+                self.bind_all("c", self.on_c_press)            # c键：切换回时钟模式
+                self.bind_all("C", self.on_c_press)            # C键：切换回时钟模式
+                self.bind_all("t", self.on_t_press)            # t键：切换到正向计时模式
+                self.bind_all("T", self.on_t_press)            # T键：切换到正向计时模式
+                self.bind_all("d", self.on_d_press)            # d键：切换到倒计时模式
+                self.bind_all("D", self.on_d_press)            # D键：切换到倒计时模式
                 
                 # 计时功能相关变量
                 self.mode = "clock"  # clock, timer, countdown
