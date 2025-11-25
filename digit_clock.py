@@ -42,6 +42,8 @@ class DigitalClock(tk.Tk):
         self.bind("<Button-3>", self.close_window)
         # F11键切换全屏/窗口模式 - 使用bind_all确保能接收事件
         self.bind_all("<F11>", self.toggle_fullscreen)
+        # ESC键关闭应用
+        self.bind_all("<Escape>", self.close_window)
         # 初始化全屏状态
         self.fullscreen = False
         
@@ -448,6 +450,8 @@ if __name__ == "__main__":
                 self.bind("<Button-3>", self.close_window)
                 # F11键切换全屏/窗口模式 - 使用bind_all确保能接收事件
                 self.bind_all("<F11>", self.toggle_fullscreen)
+                # ESC键关闭应用
+                self.bind_all("<Escape>", self.close_window)
                 # 初始化全屏状态
                 self.fullscreen = False
                 
