@@ -103,4 +103,6 @@ python digit_clock.py
 
 ## 许可证
 
-本项目为免费开源软件，仅供学习和个人使用。# Digital-desktop-clock-
+
+本项目为免费开源软件，仅供学习和个人使用。
+
